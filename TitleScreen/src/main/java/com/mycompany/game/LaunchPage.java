@@ -13,16 +13,15 @@ import java.awt.Font;
 import java.awt.event.*;
 import javax.swing.*;
 
-
 public class LaunchPage implements ActionListener{
  
  JFrame frame = new JFrame();
  JButton myButton = new JButton("Play");
  JButton exitButton = new JButton("Exit");
 
- LaunchPage(){
+ LaunchPage() {
   
- frame.setTitle("Snake Game");//Window
+  frame.setTitle("Snake Game");//Window
   frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   frame.setSize(700,600);
   frame.setLayout(null);
@@ -49,17 +48,14 @@ public class LaunchPage implements ActionListener{
  }
 
  @Override
- public void actionPerformed(ActionEvent e) 
- {
+ public void actionPerformed(ActionEvent e){
   
-  if(e.getSource()==myButton) 
-  {
+  if(e.getSource()==myButton){
    frame.dispose();
    NewWindow myWindow = new NewWindow();
   }
   
-  if (e.getSource() == exitButton) 
-  {
+  if (e.getSource() == exitButton){
             System.exit(0);
         }
  }
