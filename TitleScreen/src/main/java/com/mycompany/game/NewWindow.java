@@ -10,22 +10,24 @@ package com.mycompany.game;
  */
 import java.awt.*;
 import javax.swing.*;
+
 public class NewWindow {
 
- JFrame frame = new JFrame();
- JLabel label = new JLabel("Hello!");
+    JFrame frame;
+    
+    public NewWindow() {
+        frame = new JFrame("Snake Game");
+        
+        GamePanel gamePanel = new GamePanel();
+        frame.add(gamePanel);
+        
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        
+    }
  
- NewWindow(){
-  
-  label.setBounds(0,0,100,50);
-  label.setFont(new Font(null,Font.PLAIN,25));
-  
-  frame.add(label);
-  
-  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-  frame.setSize(700,600);
-  frame.setLayout(null);
-  frame.setLocationRelativeTo(null);
-  frame.setVisible(true);
- }
+ 
 }
