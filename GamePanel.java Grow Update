@@ -1,0 +1,191 @@
+package com.mycompany.game;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class GamePanel extends JPanel {
+
+    private static final int SCREEN_WIDTH = 700;
+    private static final int SCREEN_HEIGHT = 600;
+    private static final int UNIT_SIZE = 25; // This is the size of each "unit grid"
+
+    private ArrayList<Point> snakeSegments;
+    private int foodXCoordinate;
+    private int foodYCoordinate;
+    private char snakeMovementDirection = 'U';
+    private int snakeDelay = 75; // This is in milliseconds
+    private int currentScore = 0;
+    private Random random;
+    private Timer timer;
+
+    public GamePanel() {
+        this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
+        this.setBackground(Color.BLACK);
+        this.setFocusable(true);
+        this.addKeyListener(new MyKeyAdapter());
+        random = new Random();
+        initializeGame();
+    }
+
+    private void initializeGame() {
+        currentScore = 0;
+        snakeSegments = new ArrayList<>();
+        snakeSegments.add(new Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)); // Initial position of the snake
+        spawnFood();
+
+        timer = new Timer(snakeDelay, e -> {
+            moveSnake();
+            repaint();
+        });
+        timer.start();
+    }
+
+    private void spawnFood() {
+        foodXCoordinate = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
+        foodYCoordinate = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (timer.isRunning()) {
+            drawSnake(g);
+            drawFood(g);
+            drawScore(g);
+        } else {
+            showGameOverScreen(g);
+        }
+    }
+
+    private void drawSnake(Graphics g) {
+        g.setColor(Color.GREEN);
+        for (Point segment : snakeSegments) {
+            g.fillRect(segment.x, segment.y, UNIT_SIZE, UNIT_SIZE);
+        }
+    }
+
+    private void drawFood(Graphics g) {
+        g.setColor(Color.RED);
+        g.fillRect(foodXCoordinate, foodYCoordinate, UNIT_SIZE, UNIT_SIZE);
+    }
+
+    private void drawScore(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("Score: " + currentScore, 10, 20);
+    }
+
+    private void moveSnake() {
+        Point head = snakeSegments.get(0);
+        Point newHead = new Point(head);
+
+        switch (snakeMovementDirection) {
+            case 'U':
+                newHead.y -= UNIT_SIZE;
+                break;
+            case 'D':
+                newHead.y += UNIT_SIZE;
+                break;
+            case 'L':
+                newHead.x -= UNIT_SIZE;
+                break;
+            case 'R':
+                newHead.x += UNIT_SIZE;
+                break;
+        }
+
+        // Add new head to the snake
+        snakeSegments.add(0, newHead);
+
+        // Check if food is eaten
+        if (newHead.x == foodXCoordinate && newHead.y == foodYCoordinate) {
+            currentScore++;
+            spawnFood();
+        } else {
+            // Remove the tail if no food is eaten
+            snakeSegments.remove(snakeSegments.size() - 1);
+        }
+
+        checkCollision();
+    }
+
+    private void checkCollision() {
+        Point head = snakeSegments.get(0);
+
+        // Check wall collision
+        if (head.x < 0 || head.y < 0 || head.x >= SCREEN_WIDTH || head.y >= SCREEN_HEIGHT) {
+            endGame();
+        }
+
+        // Check self-collision
+        for (int i = 1; i < snakeSegments.size(); i++) {
+            if (head.equals(snakeSegments.get(i))) {
+                endGame();
+                break;
+            }
+        }
+    }
+
+    private void endGame() {
+        timer.stop();
+        repaint();
+    }
+
+    private void showGameOverScreen(Graphics g) {
+        g.setColor(Color.RED);
+        g.setFont(new Font("Arial", Font.BOLD, 50));
+        FontMetrics gameOverMetrics = getFontMetrics(g.getFont());
+        String gameOverMessage = "Game Over";
+        g.drawString(gameOverMessage, (SCREEN_WIDTH - gameOverMetrics.stringWidth(gameOverMessage)) / 2, SCREEN_HEIGHT / 2);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        FontMetrics restartMetrics = getFontMetrics(g.getFont());
+        String restartMessage = "Press R to Restart or ESC/Q to Exit";
+        g.drawString(restartMessage, (SCREEN_WIDTH - restartMetrics.stringWidth(restartMessage)) / 2, SCREEN_HEIGHT / 2 + 50);
+    }
+
+    private class MyKeyAdapter extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (timer.isRunning()) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_UP:
+                        if (snakeMovementDirection != 'D') {
+                            snakeMovementDirection = 'U';
+                        }
+                        break;
+                    case KeyEvent.VK_DOWN:
+                        if (snakeMovementDirection != 'U') {
+                            snakeMovementDirection = 'D';
+                        }
+                        break;
+                    case KeyEvent.VK_LEFT:
+                        if (snakeMovementDirection != 'R') {
+                            snakeMovementDirection = 'L';
+                        }
+                        break;
+                    case KeyEvent.VK_RIGHT:
+                        if (snakeMovementDirection != 'L') {
+                            snakeMovementDirection = 'R';
+                        }
+                        break;
+                }
+            } else {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_R:
+                        initializeGame();
+                        repaint();
+                        break;
+                    case KeyEvent.VK_ESCAPE:
+                    case KeyEvent.VK_Q:
+                        System.exit(0);
+                        break;
+                }
+            }
+        }
+    }
+}
